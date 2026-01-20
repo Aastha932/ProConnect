@@ -1,66 +1,80 @@
 package com.example.demo.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.JobDTO;
 import com.example.demo.service.JobService;
 
-import jakarta.validation.Valid;
-
 @RestController
-@RequestMapping("/api/v1/jobs")
+@RequestMapping("/api/v1/users")
 public class JobController {
 	@Autowired
     private JobService jobService;
-
-    // 1. Create Job
-    @PostMapping
-    public JobDTO createJob(@Valid @RequestBody JobDTO jobDto) {
-        return jobService.postNewJob(jobDto);
+	// 1. CREATE JOB FOR A USER (URL: POST /api/v1/users/{userId}/jobs)
+    @PostMapping("/{userId}/jobs")
+    public ResponseEntity<JobDTO> createJobForUser(@PathVariable Long userId, @RequestBody JobDTO jobDto) {
+        return ResponseEntity.ok(jobService.createJob(userId, jobDto));
     }
 
-    // 2. Get All Jobs
-    @GetMapping
+    // 2. GET ALL JOBS (URL: GET /api/v1/users/jobs)
+    @GetMapping("/jobs")
     public List<JobDTO> getAllJobs() {
         return jobService.findAllJobs();
     }
 
-    // 3. Get Job by ID
-    @GetMapping("/{id}")
+    // 3. GET JOB BY ID (URL: GET /api/v1/users/jobs/{id})
+    @GetMapping("/jobs/{id}")
     public JobDTO getJobById(@PathVariable Long id) {
         return jobService.findJobById(id);
     }
-
-    // 4. Update Job (PUT)
-    @PutMapping("/{id}")
-    public JobDTO updateJob(@PathVariable Long id, @Valid @RequestBody JobDTO jobDto) {
-        return jobService.updateJob(id, jobDto);
-    }
-
-    // 5. Partial Update (PATCH)
-    @PatchMapping("/{id}")
-    public JobDTO patchJob(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
-        return jobService.patchJob(id, updates);
-    }
-
-    // 6. Delete Job
-    @DeleteMapping("/{id}")
+	
+    // 4. DELETE JOB (URL: DELETE /api/v1/users/jobs/{id})
+    @DeleteMapping("/jobs/{id}")
     public String deleteJob(@PathVariable Long id) {
         jobService.removeJob(id);
         return "Job deleted successfully with ID: " + id;
     }
+    
+    //5.Pagination and sorting
+ // GET http://localhost:8080/api/v1/users/jobs/paginated?pageNumber=0&pageSize=5&sortBy=budget
+    @GetMapping("/jobs/paginated")
+    public ResponseEntity<Page<JobDTO>> getAllJobsPaginated(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "id") String sortBy
+    ) {
+        return ResponseEntity.ok(jobService.findAllJobsSortedAndPaginated(pageNumber, pageSize, sortBy));
+    }
+    
+    @GetMapping("/search")
+    public ResponseEntity<List<JobDTO>> searchJobs(
+            @RequestParam(required = false) Double minBudget,
+            @RequestParam(required = false) String title) {
+        
+        if (minBudget != null) {
+            return ResponseEntity.ok(jobService.getHighBudgetJobs(minBudget));
+        } else if (title != null) {
+            return ResponseEntity.ok(jobService.searchJobs(title));
+        }
+        return ResponseEntity.ok(jobService.findAllJobs());
+    }
+    
+ 
 }
+
+    
+
 
 
