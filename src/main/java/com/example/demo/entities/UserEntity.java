@@ -21,7 +21,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserEntity {
+public class UserEntity extends Auditable {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

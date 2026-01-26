@@ -14,13 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.UserDto;
 import com.example.demo.service.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
 	@Autowired
     private UserService userService;
 	@PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> createUser( @Valid @RequestBody UserDto userDto) {
         return ResponseEntity.ok(userService.createUser(userDto));
     }
 

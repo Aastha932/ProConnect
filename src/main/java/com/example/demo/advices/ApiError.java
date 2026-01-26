@@ -13,5 +13,5 @@ import lombok.Data;
 public class ApiError {
 	private HttpStatus status;
     private String message;
-    private List<String> errors; // Multiple validation errors ke liye
+    private List<String> errors; // Multiple validation errors e
 }
