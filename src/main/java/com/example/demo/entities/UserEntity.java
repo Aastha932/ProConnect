@@ -28,6 +28,7 @@ public class UserEntity extends Auditable {
 
     private String name;
     private String email;
+    private String password;
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<JobEntity> postedJobs;
 

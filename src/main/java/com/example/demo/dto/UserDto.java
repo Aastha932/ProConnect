@@ -13,5 +13,6 @@ public class UserDto {
 	@Email(message = "please provide a  valid email address")
 	@NotBlank(message = "email is required")
     private String email;
+	
 
 }
