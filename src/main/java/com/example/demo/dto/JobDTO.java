@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class JobDTO {
+	private Long id;
 	@NotBlank(message = "Title cannot be empty")
     private String title;
 

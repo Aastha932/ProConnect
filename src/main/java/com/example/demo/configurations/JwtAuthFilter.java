@@ -2,8 +2,11 @@ package com.example.demo.configurations;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -11,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.demo.service.JwtService;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,15 +43,24 @@ public class JwtAuthFilter extends OncePerRequestFilter{
         jwt = authHeader.substring(7); 
         userEmail = jwtService.getEmailFromToken(jwt);
 		//if user is there but not authenticated
-if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+     // doFilterInternal 
+        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             
+ 
+            Claims claims = jwtService.getAllClaimsFromToken(jwt);
+           
+            List<String> roles = (List<String>) claims.get("roles");
          
+            List<SimpleGrantedAuthority> authorities = roles == null ? Collections.emptyList() : 
+                roles.stream()
+                     .map(role -> new SimpleGrantedAuthority(role)) // Role format check: ROLE_ADMIN
+                     .collect(Collectors.toList());
+
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userEmail, null, Collections.emptyList()
+                    userEmail, null, authorities
             );
+
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            
-          
             SecurityContextHolder.getContext().setAuthentication(authToken);
         }
         

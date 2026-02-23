@@ -25,6 +25,9 @@ public class AuthService {
     public String signup(UserEntity user) {
        
         user.setPassword(passwordEncoder.encode(user.getPassword())); 
+        if (user.getRole() == null) {
+            user.setRole(com.example.demo.entities.enums.Role.CANDIDATE);
+        }
         userRepository.save(user);
         return "User registered successfully!";
     }  
@@ -36,11 +39,28 @@ public class AuthService {
       
         if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
            
-            String token = jwtService.generateToken(user.getEmail());
-            return new AuthResponse(token);
+        	String accessToken = jwtService.generateAccessToken(user);
+            String refreshToken = jwtService.generateRefreshToken(user);
+
+            return new AuthResponse(accessToken, refreshToken);
         } else {
-            
             throw new RuntimeException("Invalid Credentials");
         }
     }
+    public AuthResponse refresh(String refreshToken) {
+    	if (refreshToken == null || refreshToken.isBlank()) {
+            throw new RuntimeException("Refresh token is missing in Service!");
+        }
+      
+        String email = jwtService.getEmailFromToken(refreshToken);
+      
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    
+        String newAccessToken = jwtService.generateAccessToken(user);
+
+        return new AuthResponse(newAccessToken, refreshToken);
+    }
+    
+    
 }

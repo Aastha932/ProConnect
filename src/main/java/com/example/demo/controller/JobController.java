@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +25,8 @@ public class JobController {
     private JobService jobService;
 	// 1. CREATE JOB FOR A USER (URL: POST /api/v1/users/{userId}/jobs)
     @PostMapping("/{userId}/jobs")
+    @PreAuthorize("hasRole('ADMIN')")
+    
     public ResponseEntity<JobDTO> createJobForUser(@PathVariable Long userId, @RequestBody JobDTO jobDto) {
         return ResponseEntity.ok(jobService.createJob(userId, jobDto));
     }
@@ -42,6 +45,7 @@ public class JobController {
 	
     // 4. DELETE JOB (URL: DELETE /api/v1/users/jobs/{id})
     @DeleteMapping("/jobs/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public String deleteJob(@PathVariable Long id) {
         jobService.removeJob(id);
         return "Job deleted successfully with ID: " + id;
@@ -50,6 +54,7 @@ public class JobController {
     //5.Pagination and sorting
  // GET http://localhost:8080/api/v1/users/jobs/paginated?pageNumber=0&pageSize=5&sortBy=budget
     @GetMapping("/jobs/paginated")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CANDIDATE')")
     public ResponseEntity<Page<JobDTO>> getAllJobsPaginated(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
